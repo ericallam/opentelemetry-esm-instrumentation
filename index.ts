@@ -1,34 +1,4 @@
-import { DiagConsoleLogger, DiagLogLevel, diag } from "@opentelemetry/api";
-import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
-import { registerInstrumentations } from "@opentelemetry/instrumentation";
-import {
-  NodeTracerProvider,
-  SimpleSpanProcessor,
-} from "@opentelemetry/sdk-trace-node";
-import { OpenAIInstrumentation } from "@traceloop/instrumentation-openai";
-
-diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.DEBUG);
-
-const traceProvider = new NodeTracerProvider();
-
-const spanExporter = new OTLPTraceExporter({
-  url: process.env.EXPORTER_OTLP_URL || "http://localhost:4317",
-  timeoutMillis: 5000,
-  headers: {
-    "x-api-key": process.env.EXPORTER_OTLP_API_KEY,
-  },
-});
-
-const spanProcessor = new SimpleSpanProcessor(spanExporter);
-
-traceProvider.addSpanProcessor(spanProcessor);
-traceProvider.register();
-
-registerInstrumentations({
-  instrumentations: [new OpenAIInstrumentation()],
-});
-
-const tracer = traceProvider.getTracer("opentelemetry-esm-instrumentation");
+import type { Tracer } from "@opentelemetry/api";
 
 import OpenAI from "openai";
 
@@ -36,9 +6,9 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-async function doOpenAI() {
+export async function doWork(tracer: Tracer) {
   await tracer.startActiveSpan("doOpenAI", async (span) => {
-    const response = await openai.chat.completions.create({
+    await openai.chat.completions.create({
       model: "gpt-3.5-turbo",
       messages: [
         {
@@ -48,12 +18,6 @@ async function doOpenAI() {
       ],
     });
 
-    console.log(response.choices[0].message.content);
-
     span.end();
   });
 }
-
-doOpenAI()
-  .catch(console.error)
-  .then(() => spanExporter.forceFlush());

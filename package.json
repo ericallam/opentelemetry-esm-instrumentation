@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "build": "tsx ./build.ts",
-    "start": "node -r dotenv/config --experimental-loader=@opentelemetry/instrumentation/hook.mjs ./out/index.js"
+    "start:esm": "node -r dotenv/config ./out/harness.mjs",
+    "start:cjs": "node -r dotenv/config ./out/harness.cjs"
   },
   "author": "",
   "license": "ISC",

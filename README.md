@@ -8,24 +8,25 @@ Reproduces the following error when trying to instrument openai using `@traceloo
 2. Make sure you are running on Node v20
 3. Install node modules with `npm install`
 4. Build with `npm run build`
-5. Run with `npm run start`
+5. Run the CJS version with `npm run start:cjs` and notice it logs two spans, one from the `@traceloop/instrumentation-openai` patch
+6. Run the ESM version with `npm run start:esm`
 
 You should see this error:
 
 ```
-/Users/eric/code/triggerdotdev/reproductions/opentelemetry-esm-instrumentation/node_modules/@traceloop/instrumentation-openai/dist/index.js:44
-            this._wrap(moduleExports.OpenAI.Completions.prototype, "create", this.patchOpenAI("completion"));
-                                                        ^
-
 TypeError: Cannot read properties of undefined (reading 'prototype')
     at OpenAIInstrumentation.patch (/Users/eric/code/triggerdotdev/reproductions/opentelemetry-esm-instrumentation/node_modules/@traceloop/instrumentation-openai/dist/index.js:44:57)
     at OpenAIInstrumentation._onRequire (/Users/eric/code/triggerdotdev/reproductions/opentelemetry-esm-instrumentation/node_modules/@opentelemetry/instrumentation/build/src/platform/node/instrumentation.js:168:39)
     at hookFn (/Users/eric/code/triggerdotdev/reproductions/opentelemetry-esm-instrumentation/node_modules/@opentelemetry/instrumentation/build/src/platform/node/instrumentation.js:226:29)
     at callHookFn (/Users/eric/code/triggerdotdev/reproductions/opentelemetry-esm-instrumentation/node_modules/import-in-the-middle/index.js:28:22)
     at Hook._iitmHook (/Users/eric/code/triggerdotdev/reproductions/opentelemetry-esm-instrumentation/node_modules/import-in-the-middle/index.js:76:11)
-    at /Users/eric/code/triggerdotdev/reproductions/opentelemetry-esm-instrumentation/node_modules/import-in-the-middle/index.js:17:41
+    at /Users/eric/code/triggerdotdev/reproductions/opentelemetry-esm-instrumentation/node_modules/import-in-the-middle/lib/register.js:28:31
     at Array.forEach (<anonymous>)
-    at addHook (/Users/eric/code/triggerdotdev/reproductions/opentelemetry-esm-instrumentation/node_modules/import-in-the-middle/index.js:17:10)
-    at new Hook (/Users/eric/code/triggerdotdev/reproductions/opentelemetry-esm-instrumentation/node_modules/import-in-the-middle/index.js:84:3)
-    at OpenAIInstrumentation.enable (/Users/eric/code/triggerdotdev/reproductions/opentelemetry-esm-instrumentation/node_modules/@opentelemetry/instrumentation/build/src/platform/node/instrumentation.js:238:29)
+    at register (/Users/eric/code/triggerdotdev/reproductions/opentelemetry-esm-instrumentation/node_modules/import-in-the-middle/lib/register.js:28:15)
+    at file:///Users/eric/code/triggerdotdev/reproductions/opentelemetry-esm-instrumentation/node_modules/openai/index.mjs?iitm=true:157:1
+    at ModuleJob.run (node:internal/modules/esm/module_job:262:25)
+(node:60944) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
 ```
+
+I've tried to get this to work with Node.js `v20.11.1` and `v22.3.0` with the same results.
