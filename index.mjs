@@ -6,12 +6,7 @@ import {
   NodeTracerProvider,
   SimpleSpanProcessor,
 } from "@opentelemetry/sdk-trace-node";
-import { OpenAIInstrumentation } from "@traceloop/instrumentation-openai";
-
-import { register } from "node:module";
-import { pathToFileURL } from "node:url";
-
-register("@opentelemetry/instrumentation/hook.mjs", pathToFileURL("./"));
+import { DemoOpenAIInstrumentation } from "./instrumentation.mjs";
 
 diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.DEBUG);
 
@@ -22,16 +17,33 @@ traceProvider.addSpanProcessor(spanProcessor);
 traceProvider.register();
 
 registerInstrumentations({
-  instrumentations: [new OpenAIInstrumentation()],
+  instrumentations: [new DemoOpenAIInstrumentation()],
 });
 
 const tracer = traceProvider.getTracer("opentelemetry-esm-instrumentation");
 
-async function doWork() {
-  // @ts-expect-error
-  const workModule = await import("./index.mjs");
+import OpenAI from "openai";
 
-  await workModule.doWork(tracer);
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+export async function doWork() {
+  await tracer.startActiveSpan("doOpenAI", async (span) => {
+    await openai.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages: [
+        {
+          role: "user",
+          content: "Hello, how are you?",
+        },
+      ],
+    });
+
+    span.end();
+  });
 }
 
-doWork().catch(console.error);
+doWork().catch((err) => {
+  console.error(err);
+});
