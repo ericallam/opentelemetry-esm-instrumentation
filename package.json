@@ -1,0 +1,33 @@
+{
+  "name": "nodejs-typescript",
+  "version": "1.0.0",
+  "description": "",
+  "main": "./out/index.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsx ./build.ts",
+    "start": "node -r dotenv/config --experimental-loader=@opentelemetry/instrumentation/hook.mjs ./out/index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@opentelemetry/api": "^1.9.0",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.52.0",
+    "@opentelemetry/instrumentation": "^0.52.0",
+    "@opentelemetry/resources": "^1.25.0",
+    "@opentelemetry/sdk-node": "^0.52.0",
+    "@opentelemetry/sdk-trace-base": "^1.25.0",
+    "@opentelemetry/sdk-trace-node": "^1.25.0",
+    "@opentelemetry/semantic-conventions": "^1.25.0",
+    "@traceloop/instrumentation-openai": "^0.8.8",
+    "openai": "^4.51.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "dotenv": "^16.4.5",
+    "esbuild": "^0.21.5",
+    "tslib": "^2.6.3",
+    "tsx": "^4.7.1",
+    "typescript": "^5.4.5"
+  }
+}
